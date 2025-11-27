@@ -310,7 +310,87 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if not line:
                 continue
 
-# လက်ရှိ handle_message function အတွင်း ရှိတဲ့ special cases check ပြီးတဲ့နေရာမှာ အောက်ပါ code ကို ထည့်သွင်းပါမယ်
+
+            
+            
+            # Check for wheel cases
+            if 'ခွေ' in line or 'ခွေပူး' in line:
+                if 'ခွေ' in line:
+                    parts = line.split('ခွေ')
+                    base_part = parts[0]
+                    amount_part = parts[1]
+                else:
+                    parts = line.split('ခွေပူး')
+                    base_part = parts[0]
+                    amount_part = parts[1]
+                
+                base_numbers = ''.join([c for c in base_part if c.isdigit()])
+                amount = int(''.join([c for c in amount_part if c.isdigit()]))
+                
+                pairs = []
+                for i in range(len(base_numbers)):
+                    for j in range(len(base_numbers)):
+                        if i != j:
+                            num = int(base_numbers[i] + base_numbers[j])
+                            if num not in pairs:
+                                pairs.append(num)
+                
+                if 'ခွေပူး' in line:
+                    for d in base_numbers:
+                        double = int(d + d)
+                        if double not in pairs:
+                            pairs.append(double)
+                
+                for num in pairs:
+                    if num in closed_numbers:
+                        blocked_bets.append(f"{num:02d}-{amount}")
+                    else:
+                        all_bets.append(f"{num:02d}-{amount}")
+                        total_amount += amount
+                continue
+
+         # Check for special cases
+            special_cases = {
+                "အပူး": [0, 11, 22, 33, 44, 55, 66, 77, 88, 99],
+                "ပါဝါ": [5, 16, 27, 38, 49, 50, 61, 72, 83, 94],
+                "နက္ခ": [7, 18, 24, 35, 42, 53, 69, 70, 81, 96],
+                "ညီကို": [1, 12, 23, 34, 45, 56, 67, 78, 89, 90],
+                "ကိုညီ": [9, 10, 21, 32, 43, 54, 65, 76, 87, 98],
+            }
+
+            dynamic_types = ["ထိပ်", "ပိတ်", "ဘရိတ်", "ပါ"]
+            
+            found_special = False
+            for case_name, case_numbers in special_cases.items():
+                case_variations = [case_name]
+                if case_name == "နက္ခ":
+                    case_variations.extend(["နခ", "နက်ခ", "နတ်ခ", "နခက်", "နတ်ခက်", "နက်ခက်", "နတ်ခတ်", "နက်ခတ်", "နခတ်", "နခပ်"])
+                
+                for variation in case_variations:
+                    if line.startswith(variation):
+                        amount_str = line[len(variation):].strip()
+                        amount_str = ''.join([c for c in amount_str if c.isdigit()])
+                        
+                        if amount_str and int(amount_str) >= 100:
+                            amt = int(amount_str)
+                            for num in case_numbers:
+                                if num in closed_numbers:
+                                    blocked_bets.append(f"{num:02d}-{amt}")
+                                else:
+                                    all_bets.append(f"{num:02d}-{amt}")
+                                    total_amount += amt
+                            found_special = True
+                            break
+                    if found_special:
+                        break
+                if found_special:
+                    break
+            
+            if found_special:
+                continue
+                
+                
+                # လက်ရှိ handle_message function အတွင်း ရှိတဲ့ special cases check ပြီးတဲ့နေရာမှာ အောက်ပါ code ကို ထည့်သွင်းပါမယ်
 
 # ================ စုံ/မ စနစ် ထည့်သွင်းခြင်း ================
 
@@ -463,83 +543,6 @@ if single_even_odd_pattern:
         continue
 
 # ================ စုံ/မ စနစ် ပြီးဆုံး ================
-            
-            
-            # Check for wheel cases
-            if 'ခွေ' in line or 'ခွေပူး' in line:
-                if 'ခွေ' in line:
-                    parts = line.split('ခွေ')
-                    base_part = parts[0]
-                    amount_part = parts[1]
-                else:
-                    parts = line.split('ခွေပူး')
-                    base_part = parts[0]
-                    amount_part = parts[1]
-                
-                base_numbers = ''.join([c for c in base_part if c.isdigit()])
-                amount = int(''.join([c for c in amount_part if c.isdigit()]))
-                
-                pairs = []
-                for i in range(len(base_numbers)):
-                    for j in range(len(base_numbers)):
-                        if i != j:
-                            num = int(base_numbers[i] + base_numbers[j])
-                            if num not in pairs:
-                                pairs.append(num)
-                
-                if 'ခွေပူး' in line:
-                    for d in base_numbers:
-                        double = int(d + d)
-                        if double not in pairs:
-                            pairs.append(double)
-                
-                for num in pairs:
-                    if num in closed_numbers:
-                        blocked_bets.append(f"{num:02d}-{amount}")
-                    else:
-                        all_bets.append(f"{num:02d}-{amount}")
-                        total_amount += amount
-                continue
-
-         # Check for special cases
-            special_cases = {
-                "အပူး": [0, 11, 22, 33, 44, 55, 66, 77, 88, 99],
-                "ပါဝါ": [5, 16, 27, 38, 49, 50, 61, 72, 83, 94],
-                "နက္ခ": [7, 18, 24, 35, 42, 53, 69, 70, 81, 96],
-                "ညီကို": [1, 12, 23, 34, 45, 56, 67, 78, 89, 90],
-                "ကိုညီ": [9, 10, 21, 32, 43, 54, 65, 76, 87, 98],
-            }
-
-            dynamic_types = ["ထိပ်", "ပိတ်", "ဘရိတ်", "ပါ"]
-            
-            found_special = False
-            for case_name, case_numbers in special_cases.items():
-                case_variations = [case_name]
-                if case_name == "နက္ခ":
-                    case_variations.extend(["နခ", "နက်ခ", "နတ်ခ", "နခက်", "နတ်ခက်", "နက်ခက်", "နတ်ခတ်", "နက်ခတ်", "နခတ်", "နခပ်"])
-                
-                for variation in case_variations:
-                    if line.startswith(variation):
-                        amount_str = line[len(variation):].strip()
-                        amount_str = ''.join([c for c in amount_str if c.isdigit()])
-                        
-                        if amount_str and int(amount_str) >= 100:
-                            amt = int(amount_str)
-                            for num in case_numbers:
-                                if num in closed_numbers:
-                                    blocked_bets.append(f"{num:02d}-{amt}")
-                                else:
-                                    all_bets.append(f"{num:02d}-{amt}")
-                                    total_amount += amt
-                            found_special = True
-                            break
-                    if found_special:
-                        break
-                if found_special:
-                    break
-            
-            if found_special:
-                continue
 
             for dtype in dynamic_types:
                 if dtype in line:
