@@ -390,159 +390,146 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 continue
                 
                 
-                # လက်ရှိ handle_message function အတွင်း ရှိတဲ့ special cases check ပြီးတဲ့နေရာမှာ အောက်ပါ code ကို ထည့်သွင်းပါမယ်
-
-# ================ စုံ/မ စနစ် ထည့်သွင်းခြင်း ================
-
-# Check for Even/Odd system
-even_odd_cases = {
-    "စုံစုံ": {"first": "even", "second": "even"},
-    "မမ": {"first": "odd", "second": "odd"},
-    "စုံမ": {"first": "even", "second": "odd"},
-    "မစုံ": {"first": "odd", "second": "even"}
-}
-
-# Even digits (0,2,4,6,8) and Odd digits (1,3,5,7,9)
-even_digits = [0, 2, 4, 6, 8]
-odd_digits = [1, 3, 5, 7, 9]
-
-found_even_odd = False
-
-for case_name, case_type in even_odd_cases.items():
-    if line.startswith(case_name):
-        amount_str = line[len(case_name):].strip()
-        amount_str = ''.join([c for c in amount_str if c.isdigit()])
-        
-        if amount_str and int(amount_str) >= 100:
-            amt = int(amount_str)
-            numbers = []
+                        # ================ ဒီနေရာမှာ စုံ/မ စနစ်ကို ထည့်သွင်းရပါမယ် ================
             
-            # Generate numbers based on even/odd combination
-            if case_type["first"] == "even" and case_type["second"] == "even":
-                # Even-Even: 00, 02, 04, 06, 08, 20, 22, 24, 26, 28, 40, 42, 44, 46, 48, 60, 62, 64, 66, 68, 80, 82, 84, 86, 88
-                for first in even_digits:
-                    for second in even_digits:
-                        numbers.append(first * 10 + second)
-            elif case_type["first"] == "odd" and case_type["second"] == "odd":
-                # Odd-Odd: 11, 13, 15, 17, 19, 31, 33, 35, 37, 39, 51, 53, 55, 57, 59, 71, 73, 75, 77, 79, 91, 93, 95, 97, 99
-                for first in odd_digits:
-                    for second in odd_digits:
-                        numbers.append(first * 10 + second)
-            elif case_type["first"] == "even" and case_type["second"] == "odd":
-                # Even-Odd: 01, 03, 05, 07, 09, 21, 23, 25, 27, 29, 41, 43, 45, 47, 49, 61, 63, 65, 67, 69, 81, 83, 85, 87, 89
-                for first in even_digits:
-                    for second in odd_digits:
-                        numbers.append(first * 10 + second)
-            elif case_type["first"] == "odd" and case_type["second"] == "even":
-                # Odd-Even: 10, 12, 14, 16, 18, 30, 32, 34, 36, 38, 50, 52, 54, 56, 58, 70, 72, 74, 76, 78, 90, 92, 94, 96, 98
-                for first in odd_digits:
-                    for second in even_digits:
-                        numbers.append(first * 10 + second)
-            
-            for num in numbers:
-                if num in closed_numbers:
-                    blocked_bets.append(f"{num:02d}-{amt}")
-                else:
-                    all_bets.append(f"{num:02d}-{amt}")
-                    total_amount += amt
-            found_even_odd = True
-            break
+            # Check for Even/Odd system
+            even_odd_cases = {
+                "စုံစုံ": {"first": "even", "second": "even"},
+                "မမ": {"first": "odd", "second": "odd"},
+                "စုံမ": {"first": "even", "second": "odd"},
+                "မစုံ": {"first": "odd", "second": "even"}
+            }
 
-if found_even_odd:
-    continue
+            # Even digits (0,2,4,6,8) and Odd digits (1,3,5,7,9)
+            even_digits = [0, 2, 4, 6, 8]
+            odd_digits = [1, 3, 5, 7, 9]
 
-# Check for Even/Odd with reverse (r)
-for case_name, case_type in even_odd_cases.items():
-    if line.startswith(case_name + "r"):
-        amount_str = line[len(case_name) + 1:].strip()
-        amount_str = ''.join([c for c in amount_str if c.isdigit()])
-        
-        if amount_str and int(amount_str) >= 100:
-            amt = int(amount_str)
-            numbers = []
-            
-            # Generate numbers based on even/odd combination
-            if case_type["first"] == "even" and case_type["second"] == "even":
-                # Even-Even + Reverse (same as Even-Even since reverse of even-even is even-even)
-                for first in even_digits:
-                    for second in even_digits:
-                        numbers.append(first * 10 + second)
-            elif case_type["first"] == "odd" and case_type["second"] == "odd":
-                # Odd-Odd + Reverse (same as Odd-Odd)
-                for first in odd_digits:
-                    for second in odd_digits:
-                        numbers.append(first * 10 + second)
-            elif case_type["first"] == "even" and case_type["second"] == "odd":
-                # Even-Odd + Odd-Even (reverse)
-                for first in even_digits:
-                    for second in odd_digits:
-                        numbers.append(first * 10 + second)  # Even-Odd
-                        numbers.append(second * 10 + first)  # Odd-Even (reverse)
-            elif case_type["first"] == "odd" and case_type["second"] == "even":
-                # Odd-Even + Even-Odd (reverse)
-                for first in odd_digits:
-                    for second in even_digits:
-                        numbers.append(first * 10 + second)  # Odd-Even
-                        numbers.append(second * 10 + first)  # Even-Odd (reverse)
-            
-            # Remove duplicates
-            numbers = list(set(numbers))
-            
-            for num in numbers:
-                if num in closed_numbers:
-                    blocked_bets.append(f"{num:02d}-{amt}")
-                else:
-                    all_bets.append(f"{num:02d}-{amt}")
-                    total_amount += amt
-            found_even_odd = True
-            break
+            found_even_odd = False
 
-if found_even_odd:
-    continue
+            for case_name, case_type in even_odd_cases.items():
+                if line.startswith(case_name):
+                    amount_str = line[len(case_name):].strip()
+                    amount_str = ''.join([c for c in amount_str if c.isdigit()])
+                    
+                    if amount_str and int(amount_str) >= 100:
+                        amt = int(amount_str)
+                        numbers = []
+                        
+                        # Generate numbers based on even/odd combination
+                        if case_type["first"] == "even" and case_type["second"] == "even":
+                            # Even-Even
+                            for first in even_digits:
+                                for second in even_digits:
+                                    numbers.append(first * 10 + second)
+                        elif case_type["first"] == "odd" and case_type["second"] == "odd":
+                            # Odd-Odd
+                            for first in odd_digits:
+                                for second in odd_digits:
+                                    numbers.append(first * 10 + second)
+                        elif case_type["first"] == "even" and case_type["second"] == "odd":
+                            # Even-Odd
+                            for first in even_digits:
+                                for second in odd_digits:
+                                    numbers.append(first * 10 + second)
+                        elif case_type["first"] == "odd" and case_type["second"] == "even":
+                            # Odd-Even
+                            for first in odd_digits:
+                                for second in even_digits:
+                                    numbers.append(first * 10 + second)
+                        
+                        for num in numbers:
+                            if num in closed_numbers:
+                                blocked_bets.append(f"{num:02d}-{amt}")
+                            else:
+                                all_bets.append(f"{num:02d}-{amt}")
+                                total_amount += amt
+                        found_even_odd = True
+                        break
 
-# Check for single digit with Even/Odd (e.g., "1စုံ", "2မ")
-single_even_odd_pattern = re.search(r'^(\d)(စုံ|မ)r?(\d+)$', line)
-if single_even_odd_pattern:
-    digit_str, even_odd_type, amount_str = single_even_odd_pattern.groups()
-    digit = int(digit_str)
-    amt = int(amount_str)
-    
-    if amt >= 100:
-        numbers = []
-        
-        if even_odd_type == "စုံ":
-            # Digit + Even (e.g., "1စုံ" means 10,12,14,16,18)
-            for even_digit in even_digits:
-                if 'r' in line:
-                    # With reverse (e.g., "1စုံr" means 10,01,12,21,14,41,16,61,18,81)
-                    numbers.append(digit * 10 + even_digit)  # Original
-                    numbers.append(even_digit * 10 + digit)  # Reverse
-                else:
-                    # Without reverse
-                    numbers.append(digit * 10 + even_digit)
-        else:  # "မ"
-            # Digit + Odd (e.g., "1မ" means 11,13,15,17,19)
-            for odd_digit in odd_digits:
-                if 'r' in line:
-                    # With reverse (e.g., "1မr" means 11,11,13,31,15,51,17,71,19,91)
-                    numbers.append(digit * 10 + odd_digit)  # Original
-                    numbers.append(odd_digit * 10 + digit)  # Reverse
-                else:
-                    # Without reverse
-                    numbers.append(digit * 10 + odd_digit)
-        
-        # Remove duplicates
-        numbers = list(set(numbers))
-        
-        for num in numbers:
-            if num in closed_numbers:
-                blocked_bets.append(f"{num:02d}-{amt}")
-            else:
-                all_bets.append(f"{num:02d}-{amt}")
-                total_amount += amt
-        continue
+            if found_even_odd:
+                continue
 
-# ================ စုံ/မ စနစ် ပြီးဆုံး ================
+            # Check for Even/Odd with reverse (r)
+            for case_name, case_type in even_odd_cases.items():
+                if line.startswith(case_name + "r"):
+                    amount_str = line[len(case_name) + 1:].strip()
+                    amount_str = ''.join([c for c in amount_str if c.isdigit()])
+                    
+                    if amount_str and int(amount_str) >= 100:
+                        amt = int(amount_str)
+                        numbers = []
+                        
+                        # Generate numbers based on even/odd combination
+                        if case_type["first"] == "even" and case_type["second"] == "even":
+                            for first in even_digits:
+                                for second in even_digits:
+                                    numbers.append(first * 10 + second)
+                        elif case_type["first"] == "odd" and case_type["second"] == "odd":
+                            for first in odd_digits:
+                                for second in odd_digits:
+                                    numbers.append(first * 10 + second)
+                        elif case_type["first"] == "even" and case_type["second"] == "odd":
+                            for first in even_digits:
+                                for second in odd_digits:
+                                    numbers.append(first * 10 + second)  # Even-Odd
+                                    numbers.append(second * 10 + first)  # Odd-Even (reverse)
+                        elif case_type["first"] == "odd" and case_type["second"] == "even":
+                            for first in odd_digits:
+                                for second in even_digits:
+                                    numbers.append(first * 10 + second)  # Odd-Even
+                                    numbers.append(second * 10 + first)  # Even-Odd (reverse)
+                        
+                        # Remove duplicates
+                        numbers = list(set(numbers))
+                        
+                        for num in numbers:
+                            if num in closed_numbers:
+                                blocked_bets.append(f"{num:02d}-{amt}")
+                            else:
+                                all_bets.append(f"{num:02d}-{amt}")
+                                total_amount += amt
+                        found_even_odd = True
+                        break
+
+            if found_even_odd:
+                continue
+
+            # Check for single digit with Even/Odd (e.g., "1စုံ", "2မ")
+            single_even_odd_pattern = re.search(r'^(\d)(စုံ|မ)r?(\d+)$', line)
+            if single_even_odd_pattern:
+                digit_str, even_odd_type, amount_str = single_even_odd_pattern.groups()
+                digit = int(digit_str)
+                amt = int(amount_str)
+                
+                if amt >= 100:
+                    numbers = []
+                    
+                    if even_odd_type == "စုံ":
+                        for even_digit in even_digits:
+                            if 'r' in line:
+                                numbers.append(digit * 10 + even_digit)
+                                numbers.append(even_digit * 10 + digit)
+                            else:
+                                numbers.append(digit * 10 + even_digit)
+                    else:  # "မ"
+                        for odd_digit in odd_digits:
+                            if 'r' in line:
+                                numbers.append(digit * 10 + odd_digit)
+                                numbers.append(odd_digit * 10 + digit)
+                            else:
+                                numbers.append(digit * 10 + odd_digit)
+                    
+                    # Remove duplicates
+                    numbers = list(set(numbers))
+                    
+                    for num in numbers:
+                        if num in closed_numbers:
+                            blocked_bets.append(f"{num:02d}-{amt}")
+                        else:
+                            all_bets.append(f"{num:02d}-{amt}")
+                            total_amount += amt
+                    continue
+
 
             for dtype in dynamic_types:
                 if dtype in line:
